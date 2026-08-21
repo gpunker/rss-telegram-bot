@@ -1,6 +1,9 @@
 services:
   app:
-    build: .
+    build:
+      context: .
+      args:
+        SERVER_PORT: ${SERVER_PORT}
     tty: true
     stdin_open: true
     command: 'tail -f /dev/null'
@@ -12,6 +15,8 @@ services:
     environment:
       DBUSER: root
       DBPASS: zzz
+    ports:
+      - "${SERVER_PORT}:${SERVER_PORT}"
   # db:
   #   image: mysql:latest
   #   environment:
