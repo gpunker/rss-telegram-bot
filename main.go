@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -33,15 +32,16 @@ func main() {
 	updates := bot.GetUpdatesChan(updateConfig)
 
 	for update := range updates {
-		if update.Message == nil || update.Message.Text != "/hello" {
+		if update.Message == nil {
 			continue
 		}
 
-		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "world")
-		msg.ReplyToMessageID = update.Message.MessageID
-
-		if _, err := bot.Send(msg); err != nil {
-			panic(err)
+		switch update.Message.Text {
+		case "/start":
+			registerUser()
+		
+		case "/hello":
+			sendHello(bot, &update)
 		}
 	}
 }
@@ -52,4 +52,17 @@ func loadEnvironment() {
 	if err != nil {
 		log.Fatal("Error loading .env file. '.env' file not found.")
 	}
+}
+
+func sendHello(bot *tgbotapi.BotAPI, update *tgbotapi.Update) {
+	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "world")
+	msg.ReplyToMessageID = update.Message.MessageID
+
+	if _, err := bot.Send(msg); err != nil {
+		panic(err)
+	}
+}
+
+func registerUser() {
+	log.Printf("User registration is not implmented yet")
 }
