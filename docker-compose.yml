@@ -9,16 +9,23 @@ services:
     command: 'tail -f /dev/null'
     volumes:
       - ./:/usr/src/app
-    # depends_on:
-    #   - db
+    depends_on:
+      - db
     working_dir: /usr/src/app
     environment:
       DBUSER: root
       DBPASS: zzz
     ports:
       - "${SERVER_PORT}:${SERVER_PORT}"
-  # db:
-  #   image: mysql:latest
-  #   environment:
-  #     MYSQL_ROOT_PASSWORD: zzz
-  #     MYSQL_DATABASE: go_db
+  db:
+    image: mariadb:13.0.1-ubi10-rc
+    ports:
+      - "3306:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    environment:
+      MARIADB_ROOT_PASSWORD: ${MARIADB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${MARIADB_DATABASE}
+
+volumes:
+  mariadb_data:
