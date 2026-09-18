@@ -1,12 +1,16 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strconv"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 	"github.com/joho/godotenv"
+
+	"github.com/gpunker/rss-telegram-bot/internal/auth"
+	"github.com/gpunker/rss-telegram-bot/internal/repositories"
 )
 
 func main() {
@@ -20,10 +24,10 @@ func main() {
 		panic(err)
 	}
 
-    isDebug, err := strconv.ParseBool(os.Getenv("DEBUG"))
-    if err != nil {
-        panic(err)
-    }
+	isDebug, err := strconv.ParseBool(os.Getenv("DEBUG"))
+	if err != nil {
+		panic(err)
+	}
 	bot.Debug = isDebug
 
 	updateConfig := tgbotapi.NewUpdate(0)
@@ -38,8 +42,12 @@ func main() {
 
 		switch update.Message.Text {
 		case "/start":
-			registerUser()
-		
+			auth.RegisterUser(update.Message.From)
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, "Вы зарегистрированы! Теперь можно кастомизировать свою ленту :)")
+			if _, err := bot.Send(msg); err != nil {
+
+			}
+
 		case "/hello":
 			sendHello(bot, &update)
 		}
@@ -55,14 +63,20 @@ func loadEnvironment() {
 }
 
 func sendHello(bot *tgbotapi.BotAPI, update *tgbotapi.Update) {
-	msg := tgbotapi.NewMessage(update.Message.Chat.ID, "world")
-	msg.ReplyToMessageID = update.Message.MessageID
-
-	if _, err := bot.Send(msg); err != nil {
-		panic(err)
+	params := repositories.UserParams{
+		TelegramID: &update.Message.From.ID,
+		UserName: &update.Message.From.UserName,
 	}
-}
+	_, err := repositories.FindUser(params)
 
-func registerUser() {
-	log.Printf("User registration is not implmented yet")
+	if err != nil {
+		fmt.Printf("%v", err)
+	} else {
+		msg := tgbotapi.NewMessage(update.Message.Chat.ID, "world")
+		msg.ReplyToMessageID = update.Message.MessageID
+
+		if _, err := bot.Send(msg); err != nil {
+			panic(err)
+		}
+	}
 }
